@@ -13,7 +13,9 @@
 ## 使用的大模型
 
 - 评论情感模型基础：`hfl/chinese-roberta-wwm-ext`（可微调）
-- 文本分析与总结：`DeepSeek`（配置 `DEEPSEEK_API_KEY` 后可用）
+- 文本分析与总结：`DeepSeek`
+  - `DEEPSEEK_CHAT_MODEL=deepseek-chat`
+  - `DEEPSEEK_REASONER_MODEL=deepseek-reasoner`
 - 视频视觉理解：`Qwen3-VL-Flash`（配置 Qwen VL 接口后可用）
 
 ## 本地部署
@@ -60,11 +62,18 @@ uvicorn app.main:app --host 127.0.0.1 --port 8000
 
 ## 项目截图
 
-![查询与分析](docs/images/屏幕截图%202026-05-13%20141251.png)
-![看板与图表](docs/images/屏幕截图%202026-05-13%20141311.png)
-![语音转写与OCR](docs/images/屏幕截图%202026-05-13%20141326.png)
-![AI视频理解](docs/images/屏幕截图%202026-05-13%20141340.png)
-![AI视频内容分析](docs/images/屏幕截图%202026-05-13%20141351.png)
-![AI评论总结](docs/images/屏幕截图%202026-05-13%20141402.png)
-![AI运营建议](docs/images/屏幕截图%202026-05-13%20141415.png)
-![高赞评论](docs/images/屏幕截图%202026-05-13%20141450.png)
+| 查询与分析 | 看板与图表 |
+|---|---|
+| [![查询与分析](docs/images/屏幕截图%202026-05-13%20141251.png)](docs/images/屏幕截图%202026-05-13%20141251.png) | [![看板与图表](docs/images/屏幕截图%202026-05-13%20141311.png)](docs/images/屏幕截图%202026-05-13%20141311.png) |
+
+| 语音转写与 OCR | AI 视频理解 |
+|---|---|
+| [![语音转写与OCR](docs/images/屏幕截图%202026-05-13%20141326.png)](docs/images/屏幕截图%202026-05-13%20141326.png) | [![AI视频理解](docs/images/屏幕截图%202026-05-13%20141340.png)](docs/images/屏幕截图%202026-05-13%20141340.png) |
+
+| AI 视频内容分析 | AI 评论总结 |
+|---|---|
+| [![AI视频内容分析](docs/images/屏幕截图%202026-05-13%20141351.png)](docs/images/屏幕截图%202026-05-13%20141351.png) | [![AI评论总结](docs/images/屏幕截图%202026-05-13%20141402.png)](docs/images/屏幕截图%202026-05-13%20141402.png) |
+
+| AI 运营建议 | 高赞评论 |
+|---|---|
+| [![AI运营建议](docs/images/屏幕截图%202026-05-13%20141415.png)](docs/images/屏幕截图%202026-05-13%20141415.png) | [![高赞评论](docs/images/屏幕截图%202026-05-13%20141450.png)](docs/images/屏幕截图%202026-05-13%20141450.png) |
