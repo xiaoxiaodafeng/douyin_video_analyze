@@ -1,0 +1,1574 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>抖音评论智能分析平台</title>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+  <style>
+    :root {
+      --bg: #f3f7fb;
+      --card: rgba(255, 255, 255, 0.9);
+      --line: #d9e4f2;
+      --text: #203247;
+      --sub: #64748b;
+      --brand: #0f766e;
+      --brand-2: #0891b2;
+      --accent: #f97316;
+      --danger: #dc2626;
+      --ok: #16a34a;
+      --shadow: 0 18px 48px rgba(15, 23, 42, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--text);
+      font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(15, 118, 110, 0.15), transparent 30%),
+        radial-gradient(circle at top right, rgba(8, 145, 178, 0.15), transparent 28%),
+        linear-gradient(180deg, #f7fbff 0%, #eef5fb 100%);
+    }
+
+    .wrap {
+      max-width: 1380px;
+      margin: 0 auto;
+      padding: 24px 18px 40px;
+    }
+
+    .hero {
+      background:
+        linear-gradient(135deg, rgba(15, 118, 110, 0.96), rgba(8, 145, 178, 0.94)),
+        linear-gradient(45deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0));
+      color: #fff;
+      border-radius: 24px;
+      padding: 28px;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      right: -60px;
+      top: -40px;
+      width: 220px;
+      height: 220px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.1);
+      filter: blur(4px);
+    }
+
+    .hero h1 {
+      margin: 0;
+      font-size: 30px;
+      letter-spacing: 1px;
+    }
+
+    .hero p {
+      margin: 10px 0 0;
+      max-width: 760px;
+      line-height: 1.8;
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .panel {
+      margin-top: 18px;
+      background: var(--card);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(217, 228, 242, 0.92);
+      border-radius: 20px;
+      padding: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .section-title {
+      margin: 0 0 12px;
+      font-size: 18px;
+    }
+
+    .section-sub {
+      margin: 0 0 12px;
+      color: var(--sub);
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .field {
+      grid-column: span 3;
+    }
+
+    .field.wide {
+      grid-column: span 6;
+    }
+
+    .field label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 13px;
+      color: var(--sub);
+    }
+
+    .field input,
+    .field select,
+    .field textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 11px 12px;
+      font-size: 14px;
+      color: var(--text);
+      background: #fff;
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus {
+      border-color: rgba(8, 145, 178, 0.55);
+      box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.12);
+    }
+
+    .actions {
+      grid-column: span 12;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 4px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 14px;
+      padding: 10px 16px;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.15s ease, opacity 0.2s ease, box-shadow 0.2s ease;
+      background: linear-gradient(135deg, var(--brand), var(--brand-2));
+      box-shadow: 0 10px 22px rgba(15, 118, 110, 0.18);
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+    }
+
+    button.secondary {
+      background: linear-gradient(135deg, #334155, #475569);
+      box-shadow: 0 10px 22px rgba(51, 65, 85, 0.18);
+    }
+
+    button.warn {
+      background: linear-gradient(135deg, #ea580c, #f97316);
+      box-shadow: 0 10px 22px rgba(249, 115, 22, 0.2);
+    }
+
+    button.ghost {
+      background: #fff;
+      color: var(--text);
+      border: 1px solid var(--line);
+      box-shadow: none;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .kpi {
+      grid-column: span 3;
+      padding: 18px;
+      border-radius: 18px;
+      background: linear-gradient(180deg, #ffffff, #f8fbff);
+      border: 1px solid var(--line);
+    }
+
+    .kpi .label {
+      font-size: 13px;
+      color: var(--sub);
+    }
+
+    .kpi .num {
+      margin-top: 8px;
+      font-size: 30px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+    }
+
+    .chart {
+      grid-column: span 6;
+      min-height: 320px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: #fff;
+      padding-top: 6px;
+    }
+
+    .full {
+      grid-column: span 12;
+    }
+
+    .result-block {
+      min-height: 88px;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, #ffffff, #f8fbff);
+      padding: 16px;
+      line-height: 1.8;
+      white-space: pre-wrap;
+    }
+
+    .empty-state {
+      border: 1px dashed var(--line);
+      background: #f8fbff;
+      border-radius: 16px;
+      padding: 18px 14px;
+      color: var(--sub);
+      text-align: center;
+      font-size: 13px;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .chip {
+      border-radius: 999px;
+      background: linear-gradient(135deg, rgba(15, 118, 110, 0.12), rgba(8, 145, 178, 0.12));
+      color: #0f766e;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .frame-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+    }
+
+    .frame-card {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .frame-card img {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      object-fit: cover;
+      display: block;
+      background: #0f172a;
+    }
+
+    .frame-card .meta {
+      padding: 12px;
+      color: var(--sub);
+      font-size: 12px;
+      line-height: 1.7;
+    }
+
+    .frame-card .meta strong {
+      color: var(--text);
+    }
+
+    .insight-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 14px;
+      margin-top: 14px;
+    }
+
+    .insight-card {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: linear-gradient(180deg, #ffffff, #f7fbff);
+      padding: 16px;
+      box-shadow: 0 10px 28px rgba(15, 23, 42, 0.05);
+    }
+
+    .insight-card h3 {
+      margin: 0 0 10px;
+      font-size: 15px;
+      color: var(--text);
+    }
+
+    .insight-card p {
+      margin: 0;
+      white-space: pre-wrap;
+      line-height: 1.8;
+      color: var(--sub);
+      font-size: 13px;
+    }
+
+    .insight-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 14px;
+      margin-top: 14px;
+    }
+
+    .insight-card {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: linear-gradient(180deg, #ffffff, #f7fbff);
+      padding: 16px;
+      box-shadow: 0 10px 28px rgba(15, 23, 42, 0.05);
+    }
+
+    .insight-card h3 {
+      margin: 0 0 10px;
+      font-size: 15px;
+      color: var(--text);
+    }
+
+    .insight-card p {
+      margin: 0;
+      white-space: pre-wrap;
+      line-height: 1.8;
+      color: var(--sub);
+      font-size: 13px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      padding: 12px 10px;
+      text-align: left;
+      border-bottom: 1px solid var(--line);
+      font-size: 13px;
+      vertical-align: top;
+    }
+
+    th {
+      color: var(--sub);
+      font-weight: 700;
+    }
+
+    tr.clickable-row {
+      cursor: pointer;
+    }
+
+    tr.clickable-row:hover {
+      background: rgba(8, 145, 178, 0.06);
+    }
+
+    tr.clickable-row.selected-row {
+      background: rgba(8, 145, 178, 0.14);
+      box-shadow: inset 0 0 0 1px rgba(8, 145, 178, 0.35);
+    }
+
+    .muted {
+      color: var(--sub);
+      font-size: 12px;
+    }
+
+    .selection-tip {
+      margin-top: 10px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: linear-gradient(180deg, #ffffff, #f7fbff);
+      color: var(--text);
+      font-size: 13px;
+    }
+
+    .pager {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      margin-top: 14px;
+    }
+
+    .progress-box {
+      display: none;
+      margin-top: 12px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 14px;
+      background: linear-gradient(180deg, #ffffff, #f8fbff);
+    }
+
+    .progress-item + .progress-item {
+      margin-top: 12px;
+    }
+
+    .progress-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 7px;
+      font-size: 13px;
+    }
+
+    .progress-name {
+      font-weight: 700;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 10px;
+      overflow: hidden;
+      background: #e2e8f0;
+      border-radius: 999px;
+    }
+
+    .progress-fill {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, var(--brand-2), var(--accent));
+      transition: width 0.25s ease;
+    }
+
+    .inline-progress {
+      display: none;
+      margin-top: 12px;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .inline-progress .progress-bar {
+      flex: 1;
+    }
+
+    .log-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .log {
+      min-height: 120px;
+      border-radius: 16px;
+      padding: 14px;
+      background: #0f172a;
+      color: #d1d5db;
+      white-space: pre-wrap;
+      font-family: Consolas, monospace;
+      font-size: 13px;
+    }
+
+    .danger { color: var(--danger); font-weight: 800; }
+    .ok { color: var(--ok); font-weight: 800; }
+
+    @media (max-width: 980px) {
+      .field,
+      .field.wide,
+      .kpi,
+      .chart,
+      .full {
+        grid-column: span 12;
+      }
+
+      .hero h1 {
+        font-size: 24px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <h1>抖音视频与评论智能分析平台</h1>
+      <p>支持按博主查询候选账号、抓取并筛选目标视频，一键完成评论采集、情感分析、视频语音转写、关键画面 OCR、AI 视频理解，以及评论总结、内容复盘和运营建议输出。</p>
+    </section>
+
+    <section class="panel">
+      <h2 class="section-title">查询与分析</h2>
+      <p class="section-sub">先查候选博主，再拉取该博主视频。视频列表支持本地排序和分页，切换排序字段时不会重新向远端发起查询。</p>
+      <div class="grid">
+        <div class="field">
+          <label for="videoId">视频 ID</label>
+          <input id="videoId" placeholder="例如 7606729663356170609" />
+        </div>
+        <div class="field">
+          <label for="authorName">博主名称</label>
+          <input id="authorName" placeholder="先输入博主名称再查候选" />
+        </div>
+        <div class="field">
+          <label for="douyinId">抖音号（unique_id）</label>
+          <input id="douyinId" placeholder="例如 guangzhoufa888，可与博主名称二选一" />
+        </div>
+        <div class="field">
+          <label for="exportFmt">导出格式</label>
+          <select id="exportFmt">
+            <option value="csv">CSV</option>
+            <option value="json">JSON</option>
+            <option value="excel">Excel</option>
+            <option value="markdown">Markdown</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="videoSortBy">视频排序字段</label>
+          <select id="videoSortBy">
+            <option value="create_time">发布时间</option>
+            <option value="digg_count">点赞数</option>
+            <option value="comment_count">评论数</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="videoSortOrder">排序方向</label>
+          <select id="videoSortOrder">
+            <option value="desc">降序</option>
+            <option value="asc">升序</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="commentLimit">一级评论抓取数</label>
+          <input id="commentLimit" type="number" value="200" min="1" max="5000" />
+        </div>
+        <div class="field">
+          <label for="replyLimit">二级评论抓取数</label>
+          <input id="replyLimit" type="number" value="50" min="0" max="500" />
+        </div>
+        <div class="field wide">
+          <label for="authorCandidate">候选博主</label>
+          <select id="authorCandidate">
+            <option value="">未选择</option>
+          </select>
+        </div>
+        <div class="actions">
+          <button id="btnLoadAuthors" onclick="loadAuthorCandidates()">查询候选博主</button>
+          <button onclick="loadVideos()">查询视频</button>
+          <button id="btnAnalyze" onclick="runAnalyze()">开始分析</button>
+          <button class="secondary" onclick="loadDashboard()">刷新看板</button>
+          <button class="warn" onclick="downloadExport()">导出结果</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2 class="section-title">视频列表</h2>
+      <p class="section-sub">点击任意一行可自动选中该视频并写入视频 ID 输入框。每页固定显示 10 条。</p>
+      <div class="progress-box" id="crawlProgressPanel">
+        <div class="progress-item">
+          <div class="progress-head">
+            <span class="progress-name">候选博主查询</span>
+            <span class="muted" id="progressAuthorText">未开始</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" id="progressAuthorFill"></div></div>
+        </div>
+        <div class="progress-item">
+          <div class="progress-head">
+            <span class="progress-name">视频数据抓取</span>
+            <span class="muted" id="progressVideoText">未开始</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" id="progressVideoFill"></div></div>
+        </div>
+        <div class="progress-item">
+          <div class="progress-head">
+            <span class="progress-name">本地排序与渲染</span>
+            <span class="muted" id="progressRenderText">未开始</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" id="progressRenderFill"></div></div>
+        </div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>视频 ID</th>
+            <th>标题</th>
+            <th>作者</th>
+            <th>点赞</th>
+            <th>评论</th>
+            <th>发布时间</th>
+          </tr>
+        </thead>
+        <tbody id="videoTableBody">
+          <tr><td colspan="6">暂无视频数据</td></tr>
+        </tbody>
+      </table>
+      <div class="inline-progress" id="videoProgressWrap">
+        <div class="progress-bar"><div class="progress-fill" id="videoProgressFill"></div></div>
+        <span id="videoProgressText" class="muted"></span>
+      </div>
+      <div class="pager">
+        <button type="button" class="secondary" onclick="changeVideoPage(-1)">上一页</button>
+        <button type="button" class="secondary" onclick="changeVideoPage(1)">下一页</button>
+        <span id="videoPaginationInfo" class="muted">第 0 / 0 页，共 0 条，每页 10 条</span>
+      </div>
+      <div id="videoSelectionTip" class="selection-tip">当前未选中视频</div>
+    </section>
+
+    <section class="panel hidden" id="commentProgressSection">
+      <h2 class="section-title">评论抓取进度</h2>
+      <div class="progress-box" id="commentProgressPanel">
+        <div class="progress-item">
+          <div class="progress-head">
+            <span class="progress-name">视频校验</span>
+            <span class="muted" id="commentProgressValidateText">未开始</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" id="commentProgressValidateFill"></div></div>
+        </div>
+        <div class="progress-item">
+          <div class="progress-head">
+            <span class="progress-name">一级评论抓取</span>
+            <span class="muted" id="commentProgressTopText">未开始</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" id="commentProgressTopFill"></div></div>
+        </div>
+        <div class="progress-item">
+          <div class="progress-head">
+            <span class="progress-name">二级评论抓取</span>
+            <span class="muted" id="commentProgressReplyText">未开始</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" id="commentProgressReplyFill"></div></div>
+        </div>
+        <div class="progress-item">
+          <div class="progress-head">
+            <span class="progress-name">评论入库</span>
+            <span class="muted" id="commentProgressSaveText">未开始</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" id="commentProgressSaveFill"></div></div>
+        </div>
+        <div class="progress-item">
+          <div class="progress-head">
+            <span class="progress-name">评论分析</span>
+            <span class="muted" id="commentProgressAnalyzeText">未开始</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" id="commentProgressAnalyzeFill"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel hidden" id="videoAnalysisProgressSection">
+      <h2 class="section-title">视频分析进度</h2>
+      <div class="progress-box" id="videoAnalysisProgressPanel">
+        <div class="progress-item">
+          <div class="progress-head">
+            <span class="progress-name">素材准备</span>
+            <span class="muted" id="videoAnalysisPrepareText">未开始</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" id="videoAnalysisPrepareFill"></div></div>
+        </div>
+        <div class="progress-item">
+          <div class="progress-head">
+            <span class="progress-name">语音转写</span>
+            <span class="muted" id="videoAnalysisAsrText">未开始</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" id="videoAnalysisAsrFill"></div></div>
+        </div>
+        <div class="progress-item">
+          <div class="progress-head">
+            <span class="progress-name">AI 内容复盘</span>
+            <span class="muted" id="videoAnalysisInsightText">未开始</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" id="videoAnalysisInsightFill"></div></div>
+        </div>
+        <div class="progress-item">
+          <div class="progress-head">
+            <span class="progress-name">结果渲染</span>
+            <span class="muted" id="videoAnalysisRenderText">未开始</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" id="videoAnalysisRenderFill"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="grid">
+        <div class="kpi"><div class="label">评论总数</div><div class="num" id="kpiComments">-</div></div>
+        <div class="kpi"><div class="label">正向占比</div><div class="num" id="kpiPos">-</div></div>
+        <div class="kpi"><div class="label">负向占比</div><div class="num" id="kpiNeg">-</div></div>
+        <div class="kpi"><div class="label">舆情预警</div><div class="num" id="kpiWarn">-</div></div>
+        <div class="chart" id="chartSentiment"></div>
+        <div class="chart" id="chartKeywords"></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="grid">
+        <div class="full">
+          <h2 class="section-title">高频关键词</h2>
+          <div class="chips" id="kwChips"></div>
+          <div class="empty-state" id="kwEmpty">完成分析后，这里会显示高频关键词。</div>
+        </div>
+        <div class="full">
+          <h2 class="section-title">视频语音转写</h2>
+          <div id="transcript" class="result-block">完成分析后，这里会显示视频语音转写结果。</div>
+        </div>
+        <div class="full">
+          <h2 class="section-title">视频语音摘要</h2>
+          <div id="transcriptSummary" class="result-block">完成分析后，这里会显示视频语音摘要。</div>
+        </div>
+        <div class="full">
+          <h2 class="section-title">视频关键片段</h2>
+          <div id="transcriptClips" class="result-block">完成分析后，这里会显示视频关键片段。</div>
+        </div>
+        <div class="full">
+          <h2 class="section-title">画面风格摘要</h2>
+          <div id="visualSummary" class="result-block">完成分析后，这里会显示关键帧画面风格摘要。</div>
+        </div>
+        <div class="full">
+          <h2 class="section-title">关键帧画面与 OCR</h2>
+          <div id="visualFrames" class="frame-grid"></div>
+          <div class="empty-state" id="visualFramesEmpty">完成分析后，这里会显示关键帧截图、画面观察和 OCR 识别文字。</div>
+        </div>
+        <div class="full">
+          <h2 class="section-title">AI 视频理解</h2>
+          <div id="videoTopic" class="result-block">完成分析后，这里会显示视频主题与内容类型。</div>
+          <div id="videoHook" class="result-block">完成分析后，这里会显示开头钩子分析。</div>
+          <div id="videoTimeline" class="result-block">完成分析后，这里会显示视频时间线理解。</div>
+          <div id="videoHighlights" class="result-block">完成分析后，这里会显示关键爆点片段。</div>
+          <div id="videoRisks" class="result-block">完成分析后，这里会显示风险点与可复用模式。</div>
+        </div>
+        <div class="full">
+          <h2 class="section-title">AI 视频内容分析</h2>
+          <div class="section-sub" id="videoInsightProvider">分析来源：待执行</div>
+          <div id="videoInsight" class="result-block">完成分析后，这里会显示视频内容复盘与爆点提炼。</div>
+        </div>
+        <div class="full">
+          <h2 class="section-title">AI 评论总结</h2>
+          <div id="summary" class="result-block">完成分析后，这里会显示评论总结。</div>
+        </div>
+        <div class="full">
+          <h2 class="section-title">AI 运营建议</h2>
+          <div id="suggestion" class="result-block">完成分析后，这里会显示运营建议。</div>
+        </div>
+        <div class="full">
+          <h2 class="section-title">高赞评论</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>用户</th>
+                <th>内容</th>
+                <th>点赞</th>
+                <th>回复</th>
+                <th>IP</th>
+              </tr>
+            </thead>
+            <tbody id="topComments"></tbody>
+          </table>
+          <div class="empty-state" id="topCommentsEmpty">完成分析后，这里会显示高赞评论。</div>
+        </div>
+        <div class="full">
+          <div class="log-head">
+            <h2 class="section-title" style="margin:0;">运行日志</h2>
+            <button type="button" class="ghost" onclick="toggleLog()">展开 / 收起</button>
+          </div>
+          <div class="log hidden" id="log"></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    let allVideos = [];
+    let currentVideos = [];
+    let currentVideoPage = 1;
+    let currentVideoPages = 0;
+    const videoPageSize = 10;
+    let selectedVideoId = "";
+    let analyzing = false;
+
+    const chartSentiment = echarts.init($("chartSentiment"));
+    const chartKeywords = echarts.init($("chartKeywords"));
+
+    function log(text) {
+      const line = `[${new Date().toLocaleTimeString()}] ${text}`;
+      $("log").textContent = `${line}\n${$("log").textContent}`;
+    }
+
+    function toggleLog() {
+      $("log").classList.toggle("hidden");
+    }
+
+    function sleep(ms) {
+      return new Promise((resolve) => setTimeout(resolve, ms));
+    }
+
+    function fillResultBlock(id, text, fallback) {
+      const el = $(id);
+      el.textContent = text && String(text).trim() ? text : fallback;
+      el.classList.remove("hidden");
+    }
+
+    function setAnalyzeButtonState(running) {
+      analyzing = running;
+      const btn = $("btnAnalyze");
+      btn.disabled = running;
+      btn.style.opacity = running ? "0.7" : "1";
+      btn.style.cursor = running ? "not-allowed" : "pointer";
+      btn.textContent = running ? "分析中..." : "开始分析";
+    }
+
+    function setInlineProgress(show, percent = 0, text = "") {
+      $("videoProgressWrap").style.display = show ? "flex" : "none";
+      $("videoProgressFill").style.width = `${Math.max(0, Math.min(100, percent))}%`;
+      $("videoProgressText").textContent = text || "";
+    }
+
+    function setStageProgress(stage, percent = 0, text = "未开始") {
+      $("crawlProgressPanel").style.display = "block";
+      $(`progress${stage}Fill`).style.width = `${Math.max(0, Math.min(100, percent))}%`;
+      $(`progress${stage}Text`).textContent = text;
+    }
+
+    function resetStageProgress() {
+      setStageProgress("Author", 0, "未开始");
+      setStageProgress("Video", 0, "未开始");
+      setStageProgress("Render", 0, "未开始");
+    }
+
+    function finishStageProgress() {
+      setTimeout(() => {
+        $("crawlProgressPanel").style.display = "none";
+      }, 1200);
+    }
+
+    function setCommentStageProgress(stage, percent = 0, text = "未开始") {
+      $("commentProgressSection").classList.remove("hidden");
+      $("commentProgressPanel").style.display = "block";
+      $(`commentProgress${stage}Fill`).style.width = `${Math.max(0, Math.min(100, percent))}%`;
+      $(`commentProgress${stage}Text`).textContent = text;
+    }
+
+    function resetCommentStageProgress() {
+      setCommentStageProgress("Validate", 0, "未开始");
+      setCommentStageProgress("Top", 0, "未开始");
+      setCommentStageProgress("Reply", 0, "未开始");
+      setCommentStageProgress("Save", 0, "未开始");
+      setCommentStageProgress("Analyze", 0, "未开始");
+    }
+
+    function finishCommentStageProgress() {
+      setTimeout(() => {
+        $("commentProgressPanel").style.display = "none";
+        $("commentProgressSection").classList.add("hidden");
+      }, 1600);
+    }
+
+    function setVideoAnalysisStageProgress(stage, percent = 0, text = "未开始") {
+      $("videoAnalysisProgressSection").classList.remove("hidden");
+      $("videoAnalysisProgressPanel").style.display = "block";
+      $(`videoAnalysis${stage}Fill`).style.width = `${Math.max(0, Math.min(100, percent))}%`;
+      $(`videoAnalysis${stage}Text`).textContent = text;
+    }
+
+    function resetVideoAnalysisStageProgress() {
+      setVideoAnalysisStageProgress("Prepare", 0, "未开始");
+      setVideoAnalysisStageProgress("Asr", 0, "未开始");
+      setVideoAnalysisStageProgress("Insight", 0, "未开始");
+      setVideoAnalysisStageProgress("Render", 0, "未开始");
+    }
+
+    function finishVideoAnalysisStageProgress() {
+      setTimeout(() => {
+        $("videoAnalysisProgressPanel").style.display = "none";
+        $("videoAnalysisProgressSection").classList.add("hidden");
+      }, 1600);
+    }
+
+    function calcPercent(done, total, fallback = 35) {
+      const d = Number(done || 0);
+      const t = Number(total || 0);
+      if (t > 0) return Math.max(0, Math.min(100, (d / t) * 100));
+      return d > 0 ? 100 : fallback;
+    }
+
+    function formatNumber(num) {
+      const n = Number(num || 0);
+      if (n >= 100000000) return `${(n / 100000000).toFixed(1)}亿`;
+      if (n >= 10000) return `${(n / 10000).toFixed(1)}万`;
+      return `${n}`;
+    }
+
+    function formatTime(value) {
+      if (!value) return "-";
+      return String(value).replace("T", " ").replace(".000000", "");
+    }
+
+    function sortVideosLocal(videos) {
+      const sortBy = $("videoSortBy").value;
+      const sortOrder = $("videoSortOrder").value;
+      const reverse = sortOrder === "desc";
+      const rows = [...(videos || [])];
+      rows.sort((a, b) => {
+        let av = 0;
+        let bv = 0;
+        if (sortBy === "create_time") {
+          av = a?.create_time ? new Date(a.create_time).getTime() : 0;
+          bv = b?.create_time ? new Date(b.create_time).getTime() : 0;
+        } else {
+          av = Number(a?.[sortBy] || 0);
+          bv = Number(b?.[sortBy] || 0);
+        }
+        return reverse ? (bv - av) : (av - bv);
+      });
+      return rows;
+    }
+
+    function renderVideoPagination(page, pages, total) {
+      currentVideoPage = page;
+      currentVideoPages = pages;
+      $("videoPaginationInfo").textContent = `第 ${page} / ${pages} 页，共 ${total} 条，每页 ${videoPageSize} 条`;
+    }
+
+    function renderVideos(videos) {
+      currentVideos = Array.isArray(videos) ? videos : [];
+      const tbody = $("videoTableBody");
+      if (!currentVideos.length) {
+        tbody.innerHTML = '<tr><td colspan="6">暂无视频数据</td></tr>';
+        return;
+      }
+      tbody.innerHTML = currentVideos.map((v) => `
+        <tr class="clickable-row" data-video-id="${v.video_id}">
+          <td>${v.video_id || "-"}</td>
+          <td>${v.title || "-"}</td>
+          <td>${v.author_name || "-"}</td>
+          <td>${formatNumber(v.digg_count)}</td>
+          <td>${formatNumber(v.comment_count)}</td>
+          <td>${formatTime(v.create_time)}</td>
+        </tr>
+      `).join("");
+      Array.from(tbody.querySelectorAll("tr.clickable-row")).forEach((row) => {
+        row.addEventListener("click", () => {
+          const videoId = row.dataset.videoId || "";
+          selectedVideoId = videoId;
+          $("videoId").value = videoId;
+          Array.from(tbody.querySelectorAll("tr.clickable-row")).forEach((r) => r.classList.remove("selected-row"));
+          row.classList.add("selected-row");
+          const titleCell = row.children?.[1]?.textContent || "-";
+          $("videoSelectionTip").textContent = `已选中视频：${videoId} | 标题：${titleCell}`;
+          log(`已选中视频 ${videoId}`);
+        });
+      });
+      if (selectedVideoId) {
+        const active = tbody.querySelector(`tr.clickable-row[data-video-id="${selectedVideoId}"]`);
+        if (active) active.classList.add("selected-row");
+      }
+    }
+
+    function renderVideoPage(page = 1) {
+      const sorted = sortVideosLocal(allVideos);
+      const total = sorted.length;
+      const pages = total ? Math.ceil(total / videoPageSize) : 0;
+      currentVideoPage = pages === 0 ? 1 : Math.min(Math.max(1, page), pages);
+      const start = (currentVideoPage - 1) * videoPageSize;
+      const end = start + videoPageSize;
+      renderVideos(sorted.slice(start, end));
+      renderVideoPagination(currentVideoPage, pages, total);
+    }
+
+    function changeVideoPage(delta) {
+      const nextPage = currentVideoPage + delta;
+      if (nextPage < 1) return;
+      if (currentVideoPages > 0 && nextPage > currentVideoPages) return;
+      renderVideoPage(nextPage);
+    }
+
+    function updateKeywordArea(keywordList = []) {
+      const items = Array.isArray(keywordList) ? keywordList : [];
+      $("kwChips").innerHTML = items.slice(0, 50).map((k) => `<span class="chip">${k}</span>`).join("");
+      $("kwEmpty").classList.toggle("hidden", items.length > 0);
+    }
+
+    function updateTopComments(comments = []) {
+      const rows = Array.isArray(comments) ? comments : [];
+      $("topComments").innerHTML = rows.map((c) => `
+        <tr>
+          <td>${c.user_name || "-"}</td>
+          <td>${c.content || "-"}</td>
+          <td>${c.digg_count || 0}</td>
+          <td>${c.reply_count || 0}</td>
+          <td>${c.ip_label || "-"}</td>
+        </tr>
+      `).join("");
+      $("topCommentsEmpty").classList.toggle("hidden", rows.length > 0);
+    }
+
+    function updateChartVisibility(hasData) {
+      ["chartSentiment", "chartKeywords"].forEach((id) => {
+        $(id).classList.toggle("hidden", !hasData);
+      });
+    }
+
+    function renderInsightProvider(provider) {
+      const map = {
+        deepseek: "分析来源：DeepSeek",
+        local_fallback: "分析来源：本地兜底逻辑",
+      };
+      $("videoInsightProvider").textContent = map[provider] || "分析来源：未知";
+    }
+
+    function parseInsightSections(text) {
+      const content = String(text || "").trim();
+      if (!content) return [];
+      const normalized = content.replaceAll(String.fromCharCode(13), "");
+      const lines = normalized.split(String.fromCharCode(10));
+      const sections = [];
+
+      function isHeading(line) {
+        const s = String(line || "").trim();
+        if (!s) return false;
+        const first = s.charAt(0);
+        const second = s.charAt(1);
+        return "123456".includes(first) && (second === "." || second === "?");
+      }
+
+      let current = null;
+      for (const rawLine of lines) {
+        const line = String(rawLine || "").trim();
+        if (!line) continue;
+        if (isHeading(line)) {
+          if (current) {
+            current.body = current.body.join("\n").trim();
+            sections.push(current);
+          }
+          current = { title: line, body: [] };
+          continue;
+        }
+        if (!current) continue;
+        current.body.push(line);
+      }
+
+      if (current) {
+        current.body = current.body.join("\n").trim();
+        sections.push(current);
+      }
+
+      return sections.map((item) => ({
+        title: item.title || "Section",
+        body: item.body || "No details"
+      }));
+    }
+
+    function renderVisualFrames(frames = []) {
+      const items = Array.isArray(frames) ? frames : [];
+      $("visualFrames").innerHTML = items.map((item) => {
+        const src = `/api/video-assets/frame?video_id=${encodeURIComponent($("videoId").value.trim())}&name=${encodeURIComponent(item.name)}`;
+        return `
+          <div class="frame-card">
+            <img src="${src}" alt="frame-${item.index}" />
+            <div class="meta">
+              <div><strong>第 ${item.index} 帧</strong> · ${Number(item.timestamp_sec || 0).toFixed(2)}s</div>
+              <div>${item.observation || "暂无画面观察结果"}</div>
+              <div>${item.ocr_text ? `OCR 识别：${item.ocr_text}` : "OCR 识别：暂无文字"}</div>
+            </div>
+          </div>
+        `;
+      }).join("");
+      $("visualFramesEmpty").classList.toggle("hidden", items.length > 0);
+    }
+
+    function renderTranscriptExtras(data = {}) {
+      const summary = data.transcript_summary || "";
+      const clips = Array.isArray(data.transcript_key_clips) ? data.transcript_key_clips : [];
+      const errHint = data.transcript_error_hint || data.transcript_error || "";
+      fillResultBlock("transcriptSummary", summary, errHint || "暂无视频语音摘要。");
+      fillResultBlock(
+        "transcriptClips",
+        clips.length ? clips.map((item, idx) => `${idx + 1}. ${item}`).join("\n") : "",
+        errHint || "暂无视频关键片段。"
+      );
+      if (!data.transcript && errHint) {
+        fillResultBlock("transcript", "", errHint);
+      }
+      fillResultBlock("visualSummary", data.visual_summary, data.visual_error || "暂无画面风格摘要。");
+      renderVisualFrames(data.visual_frames || []);
+    }
+
+    function renderQwenInsight(data = {}) {
+      const item = data.qwen_video_insight || {};
+      const topic = item.video_topic || "";
+      const contentType = item.content_type || "";
+      const targetAudience = item.target_audience || "";
+      const hook = item.hook_analysis || "";
+      const timeline = Array.isArray(item.timeline_summary) ? item.timeline_summary : [];
+      const highlights = Array.isArray(item.highlight_clips) ? item.highlight_clips : [];
+      const risks = Array.isArray(item.risk_points) ? item.risk_points : [];
+      const patterns = Array.isArray(item.reusable_patterns) ? item.reusable_patterns : [];
+
+      fillResultBlock(
+        "videoTopic",
+        [topic, contentType ? `内容类型：${contentType}` : "", targetAudience ? `核心受众：${targetAudience}` : ""]
+          .filter(Boolean)
+          .join("\n"),
+        "暂无视频主题与内容类型分析。"
+      );
+      fillResultBlock("videoHook", hook, "暂无开头钩子分析。");
+      fillResultBlock(
+        "videoTimeline",
+        timeline.length ? timeline.map((row, idx) => `${idx + 1}. ${row}`).join("\n") : "",
+        "暂无视频时间线理解。"
+      );
+      fillResultBlock(
+        "videoHighlights",
+        highlights.length
+          ? highlights.map((row, idx) => `${idx + 1}. ${row.time || "未标注时间"} | ${row.summary || ""} | 原因：${row.reason || ""}`).join("\n")
+          : "",
+        "暂无关键爆点片段。"
+      );
+      fillResultBlock(
+        "videoRisks",
+        [
+          risks.length ? `风险点：\n${risks.map((row, idx) => `${idx + 1}. ${row}`).join("\n")}` : "",
+          patterns.length ? `\n可复用模式：\n${patterns.map((row, idx) => `${idx + 1}. ${row}`).join("\n")}` : "",
+        ].filter(Boolean).join("\n"),
+        "暂无风险点与可复用模式分析。"
+      );
+    }
+
+    function applyCommentTaskStatus(task) {
+      const stage = task?.stage || "";
+      const status = task?.status || "";
+      const topCount = Number(task?.top_count || 0);
+      const topTarget = Number(task?.top_target || $("commentLimit").value || 0);
+      const replyCount = Number(task?.reply_count || 0);
+      const replyDone = Number(task?.reply_done || 0);
+      const replyTotal = Number(task?.reply_total || 0);
+      const synced = Number(task?.comments_synced || 0);
+
+      if (stage === "validate" || status === "queued") {
+        setCommentStageProgress("Validate", status === "done" ? 100 : 60, task?.message || "正在校验视频...");
+      }
+
+      if (topCount > 0 || ["top", "reply", "save", "analyze"].includes(stage) || status === "done") {
+        setCommentStageProgress(
+          "Top",
+          stage === "top" && status !== "done" ? calcPercent(topCount, topTarget, 40) : 100,
+          `已抓一级评论 ${topCount}${topTarget > 0 ? ` / ${topTarget}` : ""}`
+        );
+      }
+
+      if (replyCount > 0 || ["reply", "save", "analyze"].includes(stage) || status === "done") {
+        const replyPercent = replyTotal > 0 ? calcPercent(replyDone, replyTotal, 40) : (replyCount > 0 ? 100 : 30);
+        const replyText = replyTotal > 0
+          ? `已抓二级评论 ${replyCount}，一级评论回复进度 ${replyDone}/${replyTotal}`
+          : `已抓二级评论 ${replyCount}`;
+        setCommentStageProgress("Reply", stage === "reply" && status !== "done" ? replyPercent : 100, replyText);
+      }
+
+      if (stage === "save" || stage === "analyze" || status === "done") {
+        setCommentStageProgress(
+          "Save",
+          status === "done" ? 100 : 80,
+          task?.message || `评论入库中，当前已同步 ${synced} 条`
+        );
+      }
+
+      if (status === "failed") {
+        const errorText = task?.error || task?.message || "评论抓取失败";
+        if (stage === "validate") setCommentStageProgress("Validate", 100, errorText);
+        else if (stage === "top") setCommentStageProgress("Top", 100, errorText);
+        else if (stage === "reply") setCommentStageProgress("Reply", 100, errorText);
+        else setCommentStageProgress("Save", 100, errorText);
+      }
+    }
+
+    async function api(url, options = {}) {
+      const res = await fetch(url, {
+        headers: { "Content-Type": "application/json" },
+        ...options
+      });
+      if (!res.ok) {
+        const txt = await res.text();
+        try {
+          const parsed = JSON.parse(txt);
+          const detail = parsed && parsed.detail ? parsed.detail : parsed;
+          if (detail && detail.network_blocked) {
+            throw new Error("当前运行环境访问抖音被系统拦截（WinError 10013），不是普通的查询为空。");
+          }
+        } catch (_) {
+        }
+        throw new Error(txt);
+      }
+      const ct = res.headers.get("content-type") || "";
+      return ct.includes("application/json") ? res.json() : res;
+    }
+
+    async function loadAuthorCandidates() {
+      const authorName = $("authorName").value.trim();
+      const douyinId = $("douyinId").value.trim();
+      if (!authorName && !douyinId) return alert("请先输入博主名称或抖音号");
+      try {
+        resetStageProgress();
+        setStageProgress("Author", 10, "开始查询候选博主...");
+        const data = await api("/api/authors/candidates", {
+          method: "POST",
+          body: JSON.stringify({
+            author_name: authorName || null,
+            douyin_id: douyinId || null,
+            limit: 20
+          })
+        });
+        const list = Array.isArray(data) ? data : (data.items || []);
+        const select = $("authorCandidate");
+        select.innerHTML = '<option value="">未选择</option>';
+        list.forEach((a) => {
+          const opt = document.createElement("option");
+          opt.value = a.author_sec_uid || "";
+          opt.dataset.authorName = a.author_name || "";
+          opt.textContent = `${a.author_name || "-"} | 粉丝:${a.follower_count || 0} | UID:${a.author_id || "-"} | SEC:${a.author_sec_uid || "-"}`;
+          select.appendChild(opt);
+        });
+        setStageProgress("Author", 100, `查询完成，共找到 ${list.length} 个候选博主`);
+        log(`查询到 ${list.length} 个候选博主`);
+        finishStageProgress();
+      } catch (e) {
+        setStageProgress("Author", 100, "查询失败");
+        log(`候选博主查询失败: ${e.message || e}`);
+        throw e;
+      }
+    }
+
+    async function loadVideos() {
+      const inputVideoId = $("videoId").value.trim() || null;
+      const authorName = $("authorName").value.trim() || null;
+      const douyinId = $("douyinId").value.trim() || null;
+      const candidateSelect = $("authorCandidate");
+      const authorSecUid = candidateSelect.value || null;
+      const selectedName = authorSecUid
+        ? (candidateSelect.options[candidateSelect.selectedIndex]?.dataset?.authorName || authorName)
+        : authorName;
+
+      if (!inputVideoId && !selectedName && !douyinId && !authorSecUid) {
+        allVideos = [];
+        renderVideoPage(1);
+        $("videoSelectionTip").textContent = "当前未选中视频";
+        setInlineProgress(false, 0, "");
+        alert("请先输入视频ID、博主名称或抖音号");
+        setStageProgress("Video", 100, "未执行查询");
+        log("查询视频已取消：未填写视频ID/博主名称/抖音号");
+        return;
+      }
+
+      let data = [];
+      try {
+        resetStageProgress();
+        setStageProgress("Video", 10, "开始准备查询视频...");
+        setInlineProgress(true, 12, "开始查询视频...");
+
+        if (authorSecUid) {
+          setStageProgress("Video", 45, "正在抓取该博主全部公开视频...");
+          setInlineProgress(true, 45, "正在抓取该博主全部公开视频...");
+          const result = await api("/api/authors/videos", {
+            method: "POST",
+            body: JSON.stringify({
+              author_sec_uid: authorSecUid,
+              author_name: selectedName,
+              limit: 10000,
+              page: 1,
+              sort_by: "create_time",
+              sort_order: "desc",
+              fetch_all: true
+            })
+          });
+          data = result.items || [];
+        } else {
+          setStageProgress("Video", 30, "正在按视频ID或作者查询视频...");
+          setInlineProgress(true, 40, "正在按视频ID或作者查询视频...");
+          data = await api("/api/search", {
+            method: "POST",
+            body: JSON.stringify({
+              video_id: inputVideoId,
+              author_name: selectedName,
+              douyin_id: douyinId,
+              author_sec_uid: authorSecUid,
+              limit: 100
+            })
+          });
+          if ((!data || data.length === 0) && !inputVideoId && (selectedName || douyinId)) {
+            setStageProgress("Author", 50, "未直接命中视频，尝试走候选博主回退...");
+            log("/api/search 未直接命中视频，尝试候选博主回退");
+            const cand = await api("/api/authors/candidates", {
+              method: "POST",
+              body: JSON.stringify({
+                author_name: selectedName,
+                douyin_id: douyinId,
+                limit: 20
+              })
+            });
+            const list = Array.isArray(cand) ? cand : (cand.items || []);
+            const first = list.length > 0 ? list[0] : null;
+            if (first && first.author_sec_uid) {
+              setStageProgress("Author", 100, "候选博主已确认");
+              setStageProgress("Video", 70, "已命中候选博主，正在抓取全部视频...");
+              setInlineProgress(true, 70, "已命中候选博主，正在抓取全部视频...");
+              const result = await api("/api/authors/videos", {
+                method: "POST",
+                body: JSON.stringify({
+                  author_sec_uid: first.author_sec_uid,
+                  author_name: first.author_name || selectedName,
+                  limit: 10000,
+                  page: 1,
+                  sort_by: "create_time",
+                  sort_order: "desc",
+                  fetch_all: true
+                })
+              });
+              data = result.items || [];
+            }
+          }
+        }
+
+        setStageProgress("Video", 100, `视频抓取完成，共 ${Array.isArray(data) ? data.length : 0} 条`);
+      } catch (e) {
+        setInlineProgress(false, 0, "");
+        setStageProgress("Video", 100, "视频抓取失败");
+        log(`视频查询失败: ${e.message || e}`);
+        throw e;
+      }
+
+      setStageProgress("Render", 35, "正在进行本地排序与分页...");
+      allVideos = Array.isArray(data) ? data : [];
+      renderVideoPage(1);
+      setStageProgress("Render", 100, "排序和渲染完成");
+      const sorted = sortVideosLocal(allVideos);
+      if (sorted.length > 0 && !$("videoId").value.trim()) {
+        $("videoId").value = sorted[0].video_id;
+      }
+      setInlineProgress(true, 100, `查询完成，共 ${allVideos.length} 个视频`);
+      setTimeout(() => setInlineProgress(false, 0, ""), 900);
+      finishStageProgress();
+      log(`查询到 ${allVideos.length} 个视频${authorSecUid ? "，已按选中博主过滤" : ""}`);
+    }
+
+    async function runAnalyze() {
+      const videoId = $("videoId").value.trim();
+      const commentLimit = Number($("commentLimit").value || 200);
+      const replyLimit = Number($("replyLimit").value || 50);
+      if (!videoId) return alert("请先输入视频 ID");
+      if (analyzing) return;
+
+      try {
+        setAnalyzeButtonState(true);
+        log(`开始一键分析视频 ${videoId}`);
+
+        resetCommentStageProgress();
+        setCommentStageProgress("Validate", 20, "正在创建评论抓取任务...");
+        setCommentStageProgress("Top", 0, `准备抓取一级评论，目标 ${commentLimit} 条`);
+        setCommentStageProgress("Reply", 0, `准备抓取二级评论，单条一级评论最多 ${replyLimit} 条`);
+        setCommentStageProgress("Save", 0, "等待抓取完成后入库...");
+        setCommentStageProgress("Analyze", 0, "等待评论抓取完成...");
+
+        const startData = await api("/api/comments/crawl/start", {
+          method: "POST",
+          body: JSON.stringify({ video_id: videoId, comment_limit: commentLimit, reply_limit: replyLimit })
+        });
+        const taskId = startData.task_id;
+        if (!taskId) throw new Error("评论抓取任务创建失败，未返回 task_id");
+        log(`评论抓取任务已创建：${taskId}`);
+
+        let crawlData = startData;
+        while (true) {
+          crawlData = await api(`/api/comments/crawl/status/${taskId}`);
+          applyCommentTaskStatus(crawlData);
+          if (crawlData.status === "done") break;
+          if (crawlData.status === "failed") {
+            throw new Error(crawlData.error || crawlData.message || "评论抓取失败");
+          }
+          await sleep(1000);
+        }
+
+        setCommentStageProgress(
+          "Save",
+          100,
+          `评论已入库，已抓一级评论 ${crawlData.top_count || 0} 条 / 二级评论 ${crawlData.reply_count || 0} 条`
+        );
+        setCommentStageProgress("Analyze", 25, "开始进行评论情感分析...");
+        log(`评论抓取完成，已抓一级评论 ${crawlData.top_count || 0} 条，二级评论 ${crawlData.reply_count || 0} 条`);
+
+        const data = await api("/api/analyze", {
+          method: "POST",
+          body: JSON.stringify({ video_id: videoId, force_reanalyze: false })
+        });
+        const dist = data.sentiment_distribution || { Positive: 0, Neutral: 0, Negative: 0 };
+        const total = (dist.Positive + dist.Neutral + dist.Negative) || 1;
+        $("kpiPos").textContent = `${((dist.Positive / total) * 100).toFixed(1)}%`;
+        $("kpiNeg").textContent = `${((dist.Negative / total) * 100).toFixed(1)}%`;
+        $("kpiWarn").innerHTML = data.warning?.warning ? '<span class="danger">预警</span>' : '<span class="ok">正常</span>';
+        fillResultBlock("summary", data.comment_summary, "暂无评论总结。");
+        fillResultBlock("suggestion", data.ops_suggestion, "暂无运营建议。");
+        setCommentStageProgress("Analyze", 75, `评论分析完成，共 ${data.analyzed_comments || 0} 条，开始补充视频内容分析...`);
+        log(`评论分析完成，共 ${data.analyzed_comments || 0} 条评论`);
+
+        await runVideoInsight(true);
+        setCommentStageProgress("Analyze", 100, "评论分析与视频内容分析已完成");
+        await loadDashboard({ preserveVideoAnalysis: true });
+        finishCommentStageProgress();
+      } catch (e) {
+        setCommentStageProgress("Analyze", 100, "执行失败");
+        log(`一键分析失败: ${e.message || e}`);
+        setTimeout(() => {
+          $("commentProgressPanel").style.display = "none";
+          $("commentProgressSection").classList.add("hidden");
+        }, 1800);
+        throw e;
+      } finally {
+        setAnalyzeButtonState(false);
+      }
+    }
+
+    async function runVideoInsight(silent = false) {
+      const videoId = $("videoId").value.trim();
+      if (!videoId) return alert("请先输入视频 ID");
+      resetVideoAnalysisStageProgress();
+      setVideoAnalysisStageProgress("Prepare", 15, "正在准备视频分析上下文...");
+      setVideoAnalysisStageProgress("Asr", 0, "等待开始语音转写...");
+      setVideoAnalysisStageProgress("Insight", 0, "等待开始 AI 内容复盘...");
+      setVideoAnalysisStageProgress("Render", 0, "等待结果渲染...");
+      if (!silent) log(`开始分析视频内容 ${videoId}`);
+      await sleep(80);
+      setVideoAnalysisStageProgress("Prepare", 100, "视频基础信息与评论上下文准备完成");
+      setVideoAnalysisStageProgress("Asr", 35, "正在进行完整视频语音转写...");
+
+      const data = await api("/api/analyze/video-content", {
+        method: "POST",
+        body: JSON.stringify({ video_id: videoId })
+      });
+
+      setVideoAnalysisStageProgress(
+        "Asr",
+        100,
+        data.transcript ? "视频语音转写完成" : (data.transcript_error_hint || "未生成语音转写，继续执行后续分析")
+      );
+      setVideoAnalysisStageProgress(
+        "Insight",
+        85,
+        data.video_insight_provider === "deepseek" ? "DeepSeek 正在输出运营复盘与爆点提炼" : "本地兜底分析已完成"
+      );
+      fillResultBlock("transcript", data.transcript, "暂无视频语音转写结果。");
+      renderTranscriptExtras(data);
+      renderQwenInsight(data);
+      renderInsightProvider(data.video_insight_provider);
+      fillResultBlock("videoInsight", data.insight, "暂无视频内容分析结果。");
+      setVideoAnalysisStageProgress(
+        "Insight",
+        100,
+        data.video_insight_provider === "deepseek" ? "DeepSeek 视频内容分析完成" : "本地兜底分析完成"
+      );
+      setVideoAnalysisStageProgress("Render", 100, "视频分析结果已渲染到页面");
+      finishVideoAnalysisStageProgress();
+      if (!silent) log("视频内容分析完成");
+      return data;
+    }
+
+    async function loadDashboard(options = {}) {
+      const videoId = $("videoId").value.trim();
+      if (!videoId) return alert("请先输入视频 ID");
+
+      const preserveVideoAnalysis = Boolean(options.preserveVideoAnalysis);
+      const data = await api(`/api/dashboard/${videoId}`);
+      $("kpiComments").textContent = data.comment_total || 0;
+      updateChartVisibility(Number(data.comment_total || 0) > 0);
+
+      const s = data.sentiment || { Positive: 0, Neutral: 0, Negative: 0 };
+      const total = (Number(s.Positive || 0) + Number(s.Neutral || 0) + Number(s.Negative || 0)) || 1;
+      $("kpiPos").textContent = `${(((Number(s.Positive || 0)) / total) * 100).toFixed(1)}%`;
+      $("kpiNeg").textContent = `${(((Number(s.Negative || 0)) / total) * 100).toFixed(1)}%`;
+      $("kpiWarn").innerHTML = data.warning?.warning ? '<span class="danger">预警</span>' : '<span class="ok">正常</span>';
+
+      chartSentiment.setOption({
+        title: { text: "情感占比", left: "center", top: 8, textStyle: { fontSize: 14 } },
+        tooltip: { trigger: "item" },
+        series: [{
+          type: "pie",
+          radius: ["36%", "66%"],
+          data: [
+            { name: "Positive", value: s.Positive || 0 },
+            { name: "Neutral", value: s.Neutral || 0 },
+            { name: "Negative", value: s.Negative || 0 }
+          ]
+        }]
+      });
+
+      const kwStats = (data.keyword_top_stats || []).slice(0, 20);
+      const kw = kwStats.map((item) => item.keyword);
+      chartKeywords.setOption({
+        title: { text: "关键词 Top20", left: "center", top: 8, textStyle: { fontSize: 14 } },
+        xAxis: { type: "value" },
+        yAxis: { type: "category", data: kw.slice().reverse() },
+        tooltip: { trigger: "axis" },
+        series: [{ type: "bar", data: kwStats.map((item) => item.count || 0).reverse() }]
+      });
+
+      updateKeywordArea(data.keyword_top || []);
+      fillResultBlock("summary", data.summary, "暂无评论总结。");
+      fillResultBlock("suggestion", data.suggestion, "暂无运营建议。");
+      if (!preserveVideoAnalysis) {
+        fillResultBlock("transcript", data.transcript, "暂无视频语音转写结果。");
+        renderTranscriptExtras(data);
+        renderQwenInsight(data);
+        fillResultBlock("videoInsight", data.video_insight || "", "暂无视频内容分析结果。");
+        $("videoInsightProvider").textContent = data.video_insight_provider
+          ? `分析来源：${data.video_insight_provider}`
+          : "分析来源：请点击开始分析以生成视频内容复盘";
+      } else if (data.transcript || data.transcript_summary || (data.transcript_key_clips || []).length || data.visual_summary || (data.visual_frames || []).length) {
+        if (data.transcript) {
+          fillResultBlock("transcript", data.transcript, "暂无视频语音转写结果。");
+        }
+        renderTranscriptExtras(data);
+      }
+      updateTopComments(data.top_comments || []);
+      log("看板刷新完成");
+    }
+
+    async function downloadExport() {
+      const videoId = $("videoId").value.trim();
+      const format = $("exportFmt").value;
+      if (!videoId) return alert("请先输入视频 ID");
+
+      const res = await fetch("/api/export", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ video_id: videoId, format })
+      });
+      if (!res.ok) {
+        const txt = await res.text();
+        throw new Error(txt);
+      }
+
+      const blob = await res.blob();
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      const ext = format === "excel" ? "xlsx" : format === "markdown" ? "md" : format;
+      a.download = `${videoId}.${ext}`;
+      a.click();
+      log(`已导出 ${videoId}.${ext}`);
+    }
+
+    $("videoSortBy").addEventListener("change", () => {
+      if (!allVideos.length) return;
+      renderVideoPage(1);
+      log("已按新的排序字段刷新视频列表");
+    });
+
+    $("videoSortOrder").addEventListener("change", () => {
+      if (!allVideos.length) return;
+      renderVideoPage(1);
+      log("已按新的排序方向刷新视频列表");
+    });
+
+    window.addEventListener("resize", () => {
+      chartSentiment.resize();
+      chartKeywords.resize();
+    });
+
+    updateKeywordArea([]);
+    updateTopComments([]);
+    updateChartVisibility(false);
+    log("平台已加载，建议先查询候选博主，再拉取视频并开始分析。");
+  </script>
+</body>
+</html>
