@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-import re
 import subprocess
 import sys
 from datetime import datetime
@@ -59,52 +58,6 @@ def _build_auth():
     return auth, DouyinAPI
 
 
-def _load_spider_quickstart_defaults() -> dict[str, str]:
-    out = {
-        "template_url": "",
-        "cookie": "",
-        "verify_fp": "",
-        "uifid": "",
-    }
-    try:
-        spider_path = _ensure_path(settings.douyin_spider_path)
-        quickstart_file = spider_path / "keyword_only_quickstart.py"
-        if not quickstart_file.exists():
-            return out
-
-        text = quickstart_file.read_text(encoding="utf-8", errors="ignore")
-
-        def _extract_concat_str(var_name: str) -> str:
-            pos = text.find(var_name)
-            if pos < 0:
-                return ""
-            assign_pos = text.find("(", pos)
-            if assign_pos < 0:
-                return ""
-            end_pos = text.find(")\n", assign_pos)
-            if end_pos < 0:
-                end_pos = text.find(")\r\n", assign_pos)
-            if end_pos < 0:
-                end_pos = assign_pos + 20000
-            block = text[assign_pos:end_pos]
-            parts = re.findall(r'"([^"]*)"', block)
-            return "".join(parts).strip()
-
-        def _extract_simple_str(var_name: str) -> str:
-            m = re.search(rf'{var_name}\s*=\s*"([^"]*)"', text)
-            return m.group(1).strip() if m else ""
-
-        out["template_url"] = _extract_concat_str("DEFAULT_TEMPLATE_URL")
-        out["cookie"] = _extract_concat_str("DEFAULT_COOKIE")
-        out["verify_fp"] = _extract_simple_str("DEFAULT_VERIFY_FP")
-        if out["template_url"]:
-            q = dict(parse_qsl(urlparse(out["template_url"]).query, keep_blank_values=True))
-            out["uifid"] = str(q.get("uifid") or "").strip()
-        return out
-    except Exception:
-        return out
-
-
 def _load_captured_search_defaults() -> dict[str, Any]:
     out: dict[str, Any] = {
         "template_url": "",
@@ -152,7 +105,6 @@ def _load_captured_search_defaults() -> dict[str, Any]:
 
 
 def _resolve_search_params() -> dict[str, str]:
-    defaults = _load_spider_quickstart_defaults()
     captured = _load_captured_search_defaults()
 
     env_template = (settings.dy_search_template_url or "").strip()
@@ -160,25 +112,20 @@ def _resolve_search_params() -> dict[str, str]:
     env_verify_fp = (settings.dy_verify_fp or "").strip()
     env_uifid = (settings.dy_uifid or "").strip()
 
-    template_url = env_template or captured["template_url"] or defaults["template_url"]
-    cookie = env_cookie or captured["cookie"] or defaults["cookie"]
-    verify_fp = env_verify_fp or captured["verify_fp"] or defaults["verify_fp"]
+    template_url = env_template or captured["template_url"]
+    cookie = env_cookie or captured["cookie"]
+    verify_fp = env_verify_fp or captured["verify_fp"]
     uifid = env_uifid
     if not uifid and template_url:
         q = dict(parse_qsl(urlparse(template_url).query, keep_blank_values=True))
         uifid = str(q.get("uifid") or "").strip()
     if not uifid:
-        uifid = captured["uifid"] or defaults["uifid"]
+        uifid = captured["uifid"]
 
     source = "env"
     if not env_template and captured["template_url"]:
         source = "captured_search_request"
-    elif not env_template and defaults["template_url"]:
-        source = "quickstart_defaults"
-    if env_template and not env_cookie and defaults["cookie"]:
-        source = "mixed_env_template_default_cookie"
-    if not env_template and env_cookie and defaults["template_url"]:
-        source = "mixed_default_template_env_cookie"
+    
 
     return {
         "template_url": template_url,
@@ -190,7 +137,6 @@ def _resolve_search_params() -> dict[str, str]:
 
 
 def _candidate_search_param_sets() -> list[dict[str, str]]:
-    defaults = _load_spider_quickstart_defaults()
     captured = _load_captured_search_defaults()
     env_template = (settings.dy_search_template_url or "").strip()
     env_cookie = (settings.dy_cookie or "").strip()
@@ -216,50 +162,15 @@ def _candidate_search_param_sets() -> list[dict[str, str]]:
             }
         )
 
-    if defaults["template_url"] and defaults["cookie"]:
-        candidates.append(
-            {
-                "template_url": defaults["template_url"],
-                "cookie": defaults["cookie"],
-                "verify_fp": defaults["verify_fp"],
-                "uifid": defaults["uifid"],
-                "source": "quickstart_bundle",
-            }
-        )
-
     if env_template and env_cookie:
         q = dict(parse_qsl(urlparse(env_template).query, keep_blank_values=True))
         candidates.append(
             {
                 "template_url": env_template,
                 "cookie": env_cookie,
-                "verify_fp": env_verify_fp or defaults["verify_fp"],
-                "uifid": env_uifid or str(q.get("uifid") or "") or defaults["uifid"],
+                "verify_fp": env_verify_fp,
+                "uifid": env_uifid or str(q.get("uifid") or ""),
                 "source": "env_bundle",
-            }
-        )
-
-    if defaults["template_url"] and env_cookie:
-        q = dict(parse_qsl(urlparse(defaults["template_url"]).query, keep_blank_values=True))
-        candidates.append(
-            {
-                "template_url": defaults["template_url"],
-                "cookie": env_cookie,
-                "verify_fp": env_verify_fp or defaults["verify_fp"],
-                "uifid": env_uifid or str(q.get("uifid") or "") or defaults["uifid"],
-                "source": "mixed_default_template_env_cookie",
-            }
-        )
-
-    if env_template and defaults["cookie"]:
-        q = dict(parse_qsl(urlparse(env_template).query, keep_blank_values=True))
-        candidates.append(
-            {
-                "template_url": env_template,
-                "cookie": defaults["cookie"],
-                "verify_fp": env_verify_fp or defaults["verify_fp"],
-                "uifid": env_uifid or str(q.get("uifid") or "") or defaults["uifid"],
-                "source": "mixed_env_template_default_cookie",
             }
         )
 

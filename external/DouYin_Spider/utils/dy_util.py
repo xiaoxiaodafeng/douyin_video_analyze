@@ -25,14 +25,25 @@ try:
     node_modules = path.join(basedir, 'node_modules')
     dy_path = path.join(basedir, 'static', 'dy_ab.js')
     dy_js = execjs.compile(open(dy_path, 'r', encoding='utf-8').read(), cwd=node_modules)
-    sign_path = path.join(basedir, 'static', 'dy_live_sign.js')
-    sign_js = execjs.compile(open(sign_path, 'r', encoding='utf-8').read(), cwd=node_modules)
 except:
     node_modules = path.join(basedir, '..', 'node_modules')
     dy_path = path.join(basedir, '..', 'static', 'dy_ab.js')
     dy_js = execjs.compile(open(dy_path, 'r', encoding='utf-8').read(), cwd=node_modules)
-    sign_path = path.join(basedir, '..', 'static', 'dy_live_sign.js')
-    sign_js = execjs.compile(open(sign_path, 'r', encoding='utf-8').read(), cwd=node_modules)
+
+_sign_js = None
+
+
+def _get_sign_js():
+    global _sign_js
+    if _sign_js is not None:
+        return _sign_js
+    try:
+        sign_path = path.join(basedir, 'static', 'dy_live_sign.js')
+        _sign_js = execjs.compile(open(sign_path, 'r', encoding='utf-8').read(), cwd=node_modules)
+    except Exception:
+        sign_path = path.join(basedir, '..', 'static', 'dy_live_sign.js')
+        _sign_js = execjs.compile(open(sign_path, 'r', encoding='utf-8').read(), cwd=node_modules)
+    return _sign_js
 
 
 def trans_cookies(cookies_str):
@@ -61,7 +72,7 @@ def generate_a_bogus(query, data=""):
 
 
 def generate_signature(roomId, user_unique_id):
-    return sign_js.call('sign', roomId, user_unique_id)
+    return _get_sign_js().call('sign', roomId, user_unique_id)
 
 
 # 传递私钥
