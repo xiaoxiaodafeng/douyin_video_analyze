@@ -1,4 +1,4 @@
-# douyin_video_analyze
+# 抖音视频与评论智能分析平台
 
 ## 技术栈
 
