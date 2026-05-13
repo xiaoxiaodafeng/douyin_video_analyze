@@ -1,9 +1,15 @@
 # douyin_video_analyze
 
-## 项目定位
+## 技术栈
 
-这是一个 `FastAPI + SQLite + ECharts + DeepSeek/Qwen + SenseVoice + RapidOCR` 的抖音视频与评论智能分析项目。  
-后端负责采集编排、评论分析、视频转写与内容复盘；前端提供查询、分析、看板和导出的一体化页面。
+- 后端框架：`FastAPI`、`Uvicorn`
+- 数据层：`SQLAlchemy` + `SQLite`
+- 前端展示：原生 `HTML/CSS/JavaScript` + `ECharts`
+- NLP 与情感分析：`hfl/chinese-roberta-wwm-ext`（可微调）
+- LLM 分析：`DeepSeek`（`deepseek-chat` / `deepseek-reasoner`）
+- 视频理解：`Qwen3-VL-Flash`
+- 语音转写（ASR）：`SenseVoiceSmall`
+- OCR：`RapidOCR`（`rapidocr_onnxruntime`）
 
 ## 项目功能
 
