@@ -14,7 +14,7 @@
 
 - 评论情感模型基础：`hfl/chinese-roberta-wwm-ext`（可微调）
 - 文本分析与总结：`DeepSeek`（配置 `DEEPSEEK_API_KEY` 后可用）
-- 视频视觉理解：`Qwen2.5-VL`（配置 Qwen VL 接口后可用）
+- 视频视觉理解：`Qwen3-VL-Flash`（配置 Qwen VL 接口后可用）
 
 ## 本地部署
 
@@ -58,3 +58,13 @@ uvicorn app.main:app --host 127.0.0.1 --port 8000
 - 页面：`http://127.0.0.1:8000/api/`
 - 健康检查：`http://127.0.0.1:8000/api/health`
 
+## 项目截图
+
+![查询与分析](docs/images/屏幕截图%202026-05-13%20141251.png)
+![看板与图表](docs/images/屏幕截图%202026-05-13%20141311.png)
+![语音转写与OCR](docs/images/屏幕截图%202026-05-13%20141326.png)
+![AI视频理解](docs/images/屏幕截图%202026-05-13%20141340.png)
+![AI视频内容分析](docs/images/屏幕截图%202026-05-13%20141351.png)
+![AI评论总结](docs/images/屏幕截图%202026-05-13%20141402.png)
+![AI运营建议](docs/images/屏幕截图%202026-05-13%20141415.png)
+![高赞评论](docs/images/屏幕截图%202026-05-13%20141450.png)

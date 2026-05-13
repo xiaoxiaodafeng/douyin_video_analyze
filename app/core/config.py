@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     deepseek_reasoner_model: str = "deepseek-reasoner"
     qwen_vl_api_key: str = ""
     qwen_vl_base_url: str = ""
-    qwen_vl_model: str = "Qwen/Qwen2.5-VL-7B-Instruct"
+    qwen_vl_model: str = "Qwen3-VL-Flash"
     qwen_vl_max_frames: int = 6
 
     topic_cluster_count: int = 4
