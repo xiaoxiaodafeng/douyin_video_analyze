@@ -1,0 +1,2 @@
+https://www.douyin.com/aweme/v1/web/comment/list/reply/?device_platform=webapp&aid=6383&channel=channel_pc_web&item_id=VIDEO_ID&comment_id=COMMENT_ID&cursor=0&count=20&a_bogus=CAPTURED_REPLY_A_BOGUS
+https://www.douyin.com/aweme/v1/web/comment/list/?device_platform=webapp&aid=6383&channel=channel_pc_web&aweme_id=VIDEO_ID&cursor=0&count=20&a_bogus=CAPTURED_TOP_A_BOGUS

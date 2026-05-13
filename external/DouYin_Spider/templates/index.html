@@ -1,0 +1,162 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>DouYin Spider 可视化面板</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="bg-orb orb-a"></div>
+<div class="bg-orb orb-b"></div>
+<main class="layout">
+    <section class="hero card">
+        <p class="eyebrow">DouYin Spider</p>
+        <h1>关键词抓取 + JSON + MP3 转换</h1>
+        <p class="subtitle">保留原有核心代码逻辑，仅增加可视化操作页面。</p>
+    </section>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <section class="notice {{ category }}">{{ message }}</section>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <section class="card">
+        <h2>功能1：关键词文件抓取并转 MP3</h2>
+        <p class="tip">默认只上传 <code>txt</code> 就能跑。<code>template_url / cookie / verifyFp</code> 不填时自动走项目默认值，MP3 文件名仅使用 <code>aweme_id</code>。</p>
+        <div class="mode-row">
+            <span class="chip chip-ok">推荐：仅上传关键词文件</span>
+            <span class="chip">高级参数按需填写</span>
+        </div>
+        <form action="{{ url_for('start_task') }}" method="post" enctype="multipart/form-data" class="form-grid">
+            <label>
+                关键词 txt 文件
+                <input type="file" name="keyword_file" accept=".txt,text/plain" required>
+            </label>
+
+            <details class="advanced">
+                <summary>高级参数（可选）</summary>
+                <div class="adv-body">
+                    <label>
+                        搜索模板 URL（可留空）
+                        <textarea name="template_url" rows="3">{{ defaults.template_url }}</textarea>
+                    </label>
+
+                    <label>
+                        Cookie（可留空）
+                        <textarea name="cookie" rows="3">{{ defaults.cookie }}</textarea>
+                    </label>
+
+                    <div class="cols-2">
+                        <label>
+                            verifyFp / fp（可留空）
+                            <input type="text" name="verify_fp" value="{{ defaults.verify_fp }}">
+                        </label>
+                        <label>
+                            uifid（可选）
+                            <input type="text" name="uifid" value="{{ defaults.uifid }}">
+                        </label>
+                    </div>
+
+                    <div class="cols-3">
+                        <label>
+                            搜索数量
+                            <input type="number" min="1" name="search_count" value="{{ defaults.search_count }}">
+                        </label>
+                        <label>
+                            翻页间隔(秒)
+                            <input type="number" min="0" step="0.1" name="page_sleep" value="{{ defaults.page_sleep }}">
+                        </label>
+                        <label>
+                            关键词间隔(秒)
+                            <input type="number" min="0" step="0.1" name="keyword_sleep" value="{{ defaults.keyword_sleep }}">
+                        </label>
+                    </div>
+                </div>
+            </details>
+
+            <div class="checks">
+                <label class="check">
+                    <input type="checkbox" name="save_each" checked>
+                    保存每个关键词的独立 JSON
+                </label>
+                <label class="check">
+                    <input type="checkbox" name="keep_mp4">
+                    保留中间 MP4 文件
+                </label>
+            </div>
+
+            <label>
+                转换 MP3 条数（0 表示全部）
+                <input type="number" min="0" name="mp3_limit" value="{{ defaults.mp3_limit }}">
+            </label>
+
+            <button type="submit" class="btn-primary">开始执行</button>
+        </form>
+    </section>
+
+    <section class="card">
+        <h2>功能2：仅上传 JSON 转 MP3（无需 cookie/verify-fp）</h2>
+        <p class="tip">这个模式只做“下载视频并转 MP3”，不会执行关键词抓取，MP3 文件名仅使用 <code>aweme_id</code>。</p>
+        <form action="{{ url_for('start_mp3_only_task') }}" method="post" enctype="multipart/form-data" class="form-grid">
+            <label>
+                视频 JSON 文件
+                <input type="file" name="videos_json_file" accept=".json,application/json" required>
+            </label>
+            <p class="tip">支持格式：`videos_flat.json`、`keywords_merged.json`、`{"videos":[...]}`、`[{"download_url":...}]`</p>
+
+            <div class="checks">
+                <label class="check">
+                    <input type="checkbox" name="keep_mp4">
+                    保留中间 MP4 文件
+                </label>
+            </div>
+
+            <label>
+                转换 MP3 条数（0 表示全部）
+                <input type="number" min="0" name="mp3_limit" value="0">
+            </label>
+
+            <button type="submit" class="btn-primary">开始仅转 MP3</button>
+        </form>
+    </section>
+
+    <section class="card">
+        <h2>最近任务</h2>
+        {% if tasks %}
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>任务ID</th>
+                        <th>模式</th>
+                        <th>状态</th>
+                        <th>创建时间</th>
+                        <th>进度</th>
+                        <th>查看</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for task in tasks %}
+                        <tr>
+                            <td class="mono">{{ task.id }}</td>
+                            <td>{{ task.params.mode or '-' }}</td>
+                            <td><span class="badge {{ task.status }}">{{ task.status }}</span></td>
+                            <td>{{ task.created_at }}</td>
+                            <td>{{ task.progress.current }}/{{ task.progress.total }}</td>
+                            <td><a class="link-btn" href="{{ url_for('task_detail', task_id=task.id) }}">进入任务</a></td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="empty">还没有任务，先上传文件开始吧。</p>
+        {% endif %}
+    </section>
+</main>
+</body>
+</html>

@@ -44,3 +44,14 @@ Thumbs.db
 
 # Sensitive captured request payload
 datasets/captured_search_request.json
+
+# External source runtime/sensitive files
+external/DouYin_Spider/.env
+external/DouYin_Spider/node_modules/
+external/DouYin_Spider/datas/
+external/DouYin_Spider/dy_suno_mp3/
+external/DouYin_Spider/dy_suno_mp3_quick_check/
+external/DouYin_Spider/__pycache__/
+external/dy_analyze/cookie.txt
+external/dy_analyze/outputs/
+external/dy_analyze/__pycache__/

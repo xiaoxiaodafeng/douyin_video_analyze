@@ -1,0 +1,2 @@
+Use `api.example.txt` as template and capture your own latest Douyin URLs locally.
+Do not commit real signed URLs or cookies.

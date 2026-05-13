@@ -20,8 +20,8 @@ class Settings(BaseSettings):
     sensitive_keywords: str = "诈骗,造假,维权,投诉,翻车,虚假宣传,退货,封号,违法"
 
     # Existing project integration
-    douyin_spider_path: str = r"E:\douyin\DouYin_Spider"
-    dy_analyze_path: str = r"E:\dy_analyze"
+    douyin_spider_path: str = "./external/DouYin_Spider"
+    dy_analyze_path: str = "./external/dy_analyze"
     dy_cookie: str = ""
     dy_verify_fp: str = ""
     dy_search_template_url: str = ""
