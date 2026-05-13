@@ -1,5 +1,10 @@
 # douyin_video_analyze
 
+## 项目定位
+
+这是一个 `FastAPI + SQLite + ECharts + DeepSeek/Qwen + SenseVoice + RapidOCR` 的抖音视频与评论智能分析项目。  
+后端负责采集编排、评论分析、视频转写与内容复盘；前端提供查询、分析、看板和导出的一体化页面。
+
 ## 项目功能
 
 - 支持按视频 ID、博主名称、抖音号（`unique_id`）查询视频
