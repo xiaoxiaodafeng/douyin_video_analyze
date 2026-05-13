@@ -17,6 +17,8 @@
   - `DEEPSEEK_CHAT_MODEL=deepseek-chat`
   - `DEEPSEEK_REASONER_MODEL=deepseek-reasoner`
 - 视频视觉理解：`Qwen3-VL-Flash`（配置 Qwen VL 接口后可用）
+- 语音转写（ASR）：`SenseVoiceSmall`（本地模型目录由 `ASR_MODEL_DIR` 指定）
+- OCR：`RapidOCR`（`rapidocr_onnxruntime`）
 
 ## 本地部署
 
