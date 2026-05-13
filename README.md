@@ -48,6 +48,8 @@ pip install -r requirements.txt
 Copy-Item .env.example .env
 ```
 
+说明：`requirements.txt` 已包含 API 服务、外部采集最小链路、ASR（SenseVoice）与 OCR（RapidOCR）所需依赖。
+
 ### 3. 配置 `.env`
 
 配置以下项：
