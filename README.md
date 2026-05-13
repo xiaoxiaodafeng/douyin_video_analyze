@@ -21,7 +21,7 @@
 - 支持结果看板和导出（CSV / JSON / Excel / Markdown）
 - 已内置外部爬虫最小依赖源码（在 `external/` 目录），普通用户克隆后可直接使用
 
-## 使用的大模型
+## 使用的模型（也可以采用其他模型）
 
 - 评论情感模型基础：`hfl/chinese-roberta-wwm-ext`（可微调）
 - 文本分析与总结：`DeepSeek`
@@ -50,15 +50,12 @@ Copy-Item .env.example .env
 
 ### 3. 配置 `.env`
 
-至少配置以下项：
+配置以下项：
 
 - `DY_COOKIE`
 - `DY_VERIFY_FP`
 - `DOUYIN_SPIDER_PATH=./external/DouYin_Spider`
 - `DY_ANALYZE_PATH=./external/dy_analyze`
-
-可选配置：
-
 - `DEEPSEEK_API_KEY`（启用 DeepSeek 分析）
 - `QWEN_VL_API_KEY`、`QWEN_VL_BASE_URL`（启用 Qwen VL 分析）
 
